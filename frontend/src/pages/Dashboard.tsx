@@ -52,8 +52,9 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2>Dashboard</h2>
-      <PipelineStrip active="FIELD" />
+      <h2>Project Execution Overview</h2>
+      <p className="mut">What decision: where does the planner need to look next — review queue, conflicts, or overdue work?</p>
+      <PipelineStrip active="FIELD EVIDENCE" />
       <div className="banner">Synthetic demonstration data — not real Oil India data.</div>
       {error && <ErrorBox error={error} retry={load} />}
       <div className="formrow">
@@ -72,7 +73,7 @@ export default function Dashboard() {
       <div className="cols">
         <section className="card">
           <h3>Review queue by bucket</h3>
-          {queue.length === 0 && <Empty text="No match runs yet. Run the Linker or Field Intelligence first." />}
+          {queue.length === 0 && <Empty text="No match runs yet. No compatible schedule activity has been proposed — run Reconciliation or Field Evidence first." />}
           {Object.entries(buckets).map(([b, n]) => (
             <div key={b} className="row">
               <Badge tone={toneForBucket(b)}>{b}</Badge>
@@ -93,8 +94,8 @@ export default function Dashboard() {
           {Object.entries(dash.activities_by_status).map(([s, n]) => (
             <div key={s} className="row"><span className="mut">{s}</span><span>{n}</span></div>
           ))}
-          <h3>Latest audit events</h3>
-          {audit.length === 0 && <Empty text="No consequential actions yet." />}
+          <h3>Latest authorized decisions</h3>
+          {audit.length === 0 && <Empty text="No consequential actions yet. Approve, reject, remap, mark-new or merge an item in Planner Decision." />}
           {audit.map((a) => (
             <div key={a.id} className="row">
               <span><code>{a.action}</code> {a.report_code} <span className="mut">by {a.actor}</span></span>

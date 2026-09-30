@@ -1,0 +1,872 @@
+You are the lead engineer preparing our Smart India Hackathon 2026 PS122 project for evaluator inspection.
+
+PROJECT:
+BRIDGE-X — Execution Reality Reconstruction
+Tagline:
+From Field Evidence → Execution Truth
+
+PROBLEM STATEMENT:
+SIH26122 — Intelligent Data Capture & Schedule-Linking Layer for Infrastructure Project Management: Real-Time Actual Progress Tracking (Planning-to-Execution Bridge)
+
+IMPORTANT:
+This is an evaluator-facing polishing pass, NOT a rewrite.
+
+The project already has a working prototype. Your job is to inspect the entire repository first, understand what is genuinely implemented, and then make the repository look like a serious, technically credible SIH submission.
+
+DO NOT invent functionality.
+DO NOT add fake metrics.
+DO NOT claim features that are not actually implemented.
+DO NOT replace working architecture just for cosmetic reasons.
+DO NOT introduce unnecessary AI/LLM features.
+DO NOT turn this into a generic SaaS dashboard.
+
+==================================================
+1. FIRST: AUDIT THE EXISTING PROJECT
+==================================================
+
+Before modifying anything, inspect:
+
+- backend/
+- frontend/
+- docs/
+- tests/
+- database/schema/models
+- API routes
+- matching engine
+- extraction pipeline
+- verification engine
+- graph/risk modules
+- vocabulary/memory system
+- OIL domain knowledge integration
+- demo data
+- configuration
+- README
+- package files
+- requirements
+- scripts
+- environment handling
+
+Run the existing tests/build/smoke checks.
+
+Create an internal understanding of:
+
+A. What is actually implemented
+B. What is partially implemented
+C. What is only documented/planned
+D. What is demo-only
+E. What is synthetic
+F. What is sourced from public OIL information
+G. What must NOT be claimed to evaluators
+
+Do not modify anything until this audit is complete.
+
+==================================================
+2. CORE PRODUCT IDENTITY
+==================================================
+
+The repository must consistently communicate this concept:
+
+FIELD EVIDENCE
+      ↓
+EXECUTION EVENTS
+      ↓
+EXECUTION TIMELINE
+      ↓
+L5/L6 RECONCILIATION
+      ↓
+VERIFICATION
+      ↓
+HUMAN AUTHORIZATION
+      ↓
+VERIFIED ACTUALS
+      ↓
+PROJECT MEMORY
+
+Core statement:
+
+"A field report is not an activity update.
+It is evidence of an execution event."
+
+Core differentiation:
+
+"Don't simply match the report.
+Reconstruct the event."
+
+Do NOT frame BRIDGE-X as merely:
+
+- an AI chatbot
+- an LLM application
+- an NLP matcher
+- a generic project dashboard
+- a generic RAG system
+- an AI schedule updater
+
+The central technical story is EXECUTION REALITY RECONSTRUCTION.
+
+==================================================
+3. EVALUATOR-FIRST README
+==================================================
+
+Rewrite/upgrade the root README.md into a polished evaluator-facing README.
+
+The README should immediately answer:
+
+1. What problem does BRIDGE-X solve?
+2. Why is the problem difficult?
+3. What is BRIDGE-X?
+4. What is technically different about it?
+5. How does the pipeline work?
+6. What is actually implemented?
+7. How can an evaluator run it?
+8. What can be demonstrated in 2–3 minutes?
+9. What data is synthetic?
+10. What public OIL information is used?
+11. What are the current limitations?
+
+Recommended README structure:
+
+# BRIDGE-X
+## Execution Reality Reconstruction
+
+One-line description.
+
+### Problem
+Explain the planning-vs-execution gap.
+
+### Core Insight
+A field report is evidence of an execution event.
+
+### Solution
+Explain:
+Evidence → Events → Timeline → L5/L6 Reconciliation → Verification → Authorization → Actuals → Memory
+
+### Why Existing Approaches Are Insufficient
+Keep this factual.
+Do NOT attack competitors.
+Explain why simple report-to-activity matching is insufficient when:
+- terminology differs
+- granularity differs
+- multiple reports describe one execution
+- reports contradict schedule state
+- dependencies matter
+- some work is unplanned
+
+### Core Capabilities
+Only list capabilities that actually exist.
+
+### Architecture
+Include a clean Mermaid diagram if appropriate.
+
+### Matching
+Explain the multi-signal matching approach.
+
+### Granularity
+Explain:
+- ONE_TO_ONE
+- PARTIAL
+- ONE_TO_MANY
+- NEW_UNPLANNED
+
+### Verification
+Explain:
+- chronology
+- dependencies
+- state
+- evidence
+- confidence gate
+
+### Human Review
+Explain:
+- approve
+- reject
+- remap
+- mark new
+- merge
+
+### Project Memory
+Explain approval-based vocabulary learning.
+
+### Execution Graph
+Explain the read-only dependency/context graph.
+
+### Execution Risk
+Explain that it is evidence-based attention scoring, NOT predictive certainty.
+
+### OIL Public Domain Knowledge
+Clearly distinguish:
+REAL PUBLIC OIL DOMAIN INFORMATION
+from
+SYNTHETIC DEMONSTRATION EXECUTION DATA.
+
+Never imply that synthetic DPRs are real OIL DPRs.
+
+### Technology Stack
+
+Show actual technologies only.
+
+### Running Locally
+
+Give exact Windows commands that work with the current project.
+
+Include:
+- prerequisites
+- backend startup
+- frontend startup
+- environment configuration
+- demo workflow
+
+### Testing
+
+Show actual test results obtained from running the project.
+
+Do not manually write numbers without verifying them.
+
+### Demo Scenario
+
+Give evaluators a simple path:
+
+1. Load demo project
+2. Inspect planned L5/L6 activities
+3. ingest/select field report
+4. extract execution event
+5. observe candidate match
+6. inspect confidence
+7. inspect verification
+8. approve/reject/remap
+9. inspect resulting actual
+10. inspect memory/graph/risk
+
+Only include steps that work.
+
+### Limitations / Prototype Scope
+
+Be honest.
+
+Examples:
+- synthetic execution fixtures
+- OCR limitations
+- production integrations not implemented
+- external LLM availability is not guaranteed
+- P6 integration scope if only prototype-level
+
+Honesty increases credibility.
+
+==================================================
+4. CREATE A STRONG ARCHITECTURE DOCUMENT
+==================================================
+
+Create/update:
+
+docs/ARCHITECTURE.md
+
+It should explain the system technically.
+
+Use diagrams.
+
+Architecture:
+
+INPUTS
+→ INGESTION
+→ EVENT EXTRACTION
+→ NORMALIZATION
+→ MATCHING
+→ GRANULARITY RECONCILIATION
+→ VERIFICATION
+→ CONFIDENCE GATE
+→ HUMAN REVIEW
+→ AUTHORIZED ACTUALS
+→ MEMORY
+
+Also document:
+
+- data flow
+- API boundaries
+- persistence
+- deterministic vs AI-assisted components
+- failure handling
+- provenance
+- audit trail
+- security considerations
+- offline/fallback behavior
+
+Clearly distinguish:
+
+AI-assisted
+
+from
+
+deterministic.
+
+==================================================
+5. CREATE A TECHNICAL EVALUATOR GUIDE
+==================================================
+
+Create:
+
+docs/EVALUATOR_GUIDE.md
+
+This is extremely important.
+
+Make it possible for a judge to understand the project without reading the entire codebase.
+
+Include:
+
+## 2-Minute Demo
+
+Exact clicks/commands.
+
+## 5-Minute Technical Walkthrough
+
+What to show and why.
+
+## Architecture
+
+Short explanation.
+
+## Core Innovation
+
+Execution Event → Timeline → Reconciliation.
+
+## Matching Demonstration
+
+Show a terminology mismatch.
+
+## Granularity Demonstration
+
+Show 1:1 / Partial / 1:Many / New.
+
+## Verification Demonstration
+
+Show a contradiction or dependency conflict.
+
+## Human Review
+
+Show approval/remapping.
+
+## Memory Demonstration
+
+Show approved vocabulary influencing a future match.
+
+## Risk Demonstration
+
+Show evidence-based attention signals.
+
+## Synthetic Data Disclaimer
+
+Clearly state what is synthetic.
+
+==================================================
+6. ADD A REPRODUCIBLE DEMO
+==================================================
+
+If the existing project already has demo/reset/seed functionality, polish it.
+
+If a small missing script is necessary, create one.
+
+Evaluator should be able to start from a clean state.
+
+Prefer:
+
+scripts/
+    setup/
+    demo/
+    test/
+
+or another clean structure appropriate to the existing project.
+
+Do NOT introduce a giant deployment system.
+
+The evaluator experience should be:
+
+INSTALL
+→ START
+→ OPEN
+→ LOAD DEMO
+→ SEE THE DIFFERENTIATION
+
+==================================================
+7. IMPROVE DEMO DATA STORY
+==================================================
+
+Inspect current synthetic fixtures.
+
+Make the demo scenario coherent.
+
+The best demonstration should show:
+
+SCHEDULE:
+PIP-210-011
+24" Pipeline Erection
+R-210
+
+FIELD EVIDENCE:
+
+Report A:
+execution started
+
+Report B:
+progress / fit-up
+
+Report C:
+execution held
+
+Report D:
+execution resumed
+
+Report E:
+execution completed
+
+Then demonstrate how the system handles the evidence.
+
+IMPORTANT:
+
+Only implement this exact event timeline if the existing architecture can genuinely support it.
+
+If the current implementation does not expose a first-class timeline/state-machine, DO NOT fake it.
+
+Instead:
+- document the existing event extraction/matching/verification behavior
+- optionally add a SMALL deterministic demo representation
+- do not build an oversized new subsystem
+
+==================================================
+8. FRONTEND POLISH
+==================================================
+
+Make the existing UI evaluator-friendly.
+
+Design principles:
+
+- light/clean industrial interface
+- strong hierarchy
+- no neon
+- no gradients
+- no glassmorphism
+- no AI robots
+- no meaningless animations
+- no excessive cards
+- no generic SaaS template appearance
+
+Prioritize:
+
+1. Project overview
+2. Field evidence
+3. Matching/reconciliation
+4. Verification
+5. Human review
+6. Execution graph
+7. Risk/attention
+8. Project memory
+
+Every page should answer:
+
+"What decision is this screen helping the planner make?"
+
+Remove decorative UI that doesn't answer that question.
+
+Use meaningful labels such as:
+
+FIELD EVIDENCE
+EXECUTION EVENT
+CANDIDATE ACTIVITY
+RECONCILIATION
+VERIFICATION
+PLANNER DECISION
+AUTHORIZED ACTUAL
+PROJECT MEMORY
+
+Avoid generic labels like:
+
+AI INSIGHTS
+SMART ANALYTICS
+INTELLIGENCE HUB
+AI MAGIC
+
+==================================================
+9. MAKE THE CORE DIFFERENTIATOR VISIBLE
+==================================================
+
+The UI should visually reinforce:
+
+FIELD EVIDENCE
+      ↓
+EVENT
+      ↓
+TIMELINE
+      ↓
+ACTIVITY
+      ↓
+VERIFICATION
+      ↓
+AUTHORIZATION
+
+If practical, add a compact execution-history visualization.
+
+But do not pretend that an unimplemented timeline engine exists.
+
+Use existing data wherever possible.
+
+==================================================
+10. ERROR / EMPTY / LOADING STATES
+==================================================
+
+Inspect all major screens.
+
+Add professional states for:
+
+- no reports
+- unmatched report
+- ambiguous match
+- verification conflict
+- failed extraction
+- empty project
+- loading
+- API unavailable
+- invalid input
+
+Messages should be useful.
+
+Example:
+
+BAD:
+"Something went wrong."
+
+BETTER:
+"No compatible schedule activity was found. Review the evidence or mark it as new/unplanned work."
+
+==================================================
+11. API / CODE QUALITY
+==================================================
+
+Inspect backend APIs.
+
+Improve:
+
+- naming consistency
+- validation
+- error responses
+- type hints where appropriate
+- comments only where useful
+- logging
+- configuration
+- dead code
+- duplicated logic
+
+Do NOT perform a massive rewrite.
+
+Preserve existing working APIs unless there is a strong reason to change them.
+
+If changing an API, update:
+- frontend
+- tests
+- docs
+- README
+- API reference
+
+==================================================
+12. TESTING
+==================================================
+
+Run all existing backend tests.
+
+Run frontend:
+- TypeScript check
+- build
+
+Run the existing smoke test.
+
+If tests are missing around important existing behavior, add focused tests.
+
+Prioritize tests for:
+
+- extraction
+- matching
+- confidence gates
+- granularity
+- verification
+- dependency conflicts
+- vocabulary learning
+- risk classification
+- API validation
+
+Do not create meaningless tests merely to increase test count.
+
+Report REAL results.
+
+==================================================
+13. SECURITY / CONFIGURATION
+==================================================
+
+Inspect:
+
+- secrets
+- .env
+- .env.example
+- API keys
+- hardcoded credentials
+- CORS
+- file upload handling
+- SQL/database access
+- unsafe subprocess usage
+
+NEVER commit secrets.
+
+Make .env.example safe and keyless where possible.
+
+If an external LLM is optional, make the system gracefully operate without it.
+
+==================================================
+14. GITHUB CLEANUP
+==================================================
+
+Make the repository evaluator-friendly.
+
+Check:
+
+.gitignore
+README.md
+LICENSE if appropriate
+docs/
+scripts/
+backend/
+frontend/
+
+Remove:
+
+- temporary files
+- generated caches
+- IDE artifacts
+- node_modules
+- Python caches
+- random screenshots
+- debug files
+- personal files
+- API keys
+- unused experimental code
+
+Do NOT delete anything before verifying whether it is required.
+
+==================================================
+15. GITHUB LANDING PAGE
+==================================================
+
+The first screen of GitHub should communicate:
+
+BRIDGE-X
+Execution Reality Reconstruction
+
+From Field Evidence → Execution Truth
+
+Then a compact architecture diagram:
+
+FIELD EVIDENCE
+↓
+EXECUTION EVENTS
+↓
+TIMELINE
+↓
+L5/L6 RECONCILIATION
+↓
+VERIFICATION
+↓
+HUMAN AUTHORIZATION
+↓
+VERIFIED ACTUALS
+
+Then:
+
+- problem
+- solution
+- key innovations
+- demo
+- architecture
+- setup
+- testing
+- limitations
+
+Do not bury the actual idea below 500 lines of README text.
+
+==================================================
+16. GITHUB SCREENSHOTS
+==================================================
+
+If screenshots already exist, inspect them.
+
+If missing, identify the 3–5 most important screens that should be captured later:
+
+1. Project execution overview
+2. Field evidence → candidate activity
+3. Verification/review
+4. Execution graph
+5. Memory / risk
+
+Do NOT generate fake screenshots.
+
+If the repository has no screenshot-generation mechanism, document what should be captured rather than inventing images.
+
+==================================================
+17. DOCUMENTATION CONSISTENCY
+==================================================
+
+Search all docs for inconsistent terminology.
+
+Use these consistently:
+
+BRIDGE-X
+Execution Reality Reconstruction
+Field Evidence
+Execution Event
+Execution Timeline
+L5/L6 Reconciliation
+Granularity
+Verification
+Confidence Gate
+Human Authorization
+Verified Actuals
+Project Memory
+
+Do not alternate randomly between:
+
+AI matcher
+schedule AI
+progress AI
+AI planner
+execution AI
+
+unless technically necessary.
+
+==================================================
+18. IMPORTANT CLAIM POLICY
+==================================================
+
+Before writing any claim, ask:
+
+"Can the current repository demonstrate this?"
+
+If YES:
+document it.
+
+If PARTIALLY:
+label it as prototype scope.
+
+If NO:
+do not claim it.
+
+Never invent:
+
+- accuracy percentages
+- industry adoption
+- OIL usage
+- production deployment
+- real-time guarantees
+- predictive accuracy
+- benchmark results
+- competitor superiority
+
+==================================================
+19. DO NOT ADD BUZZWORD FEATURES
+==================================================
+
+Do NOT add just for evaluator appeal:
+
+- multi-agent swarm
+- blockchain
+- digital twin
+- computer vision
+- BIM
+- giant local LLM
+- autonomous Primavera replacement
+- predictive ML
+- generic chatbot
+- vector database just because it sounds impressive
+- unnecessary microservices
+- unnecessary cloud infrastructure
+
+Every modification must strengthen the existing PS122 mechanism.
+
+==================================================
+20. FINAL EVALUATOR CHECK
+==================================================
+
+After implementation, evaluate the repository as if you were an SIH evaluator.
+
+Answer internally:
+
+1. Can I understand the problem in 30 seconds?
+2. Can I understand BRIDGE-X in 30 seconds?
+3. Can I see what is technically different?
+4. Can I run it without guessing?
+5. Can I see the evidence-to-actual flow?
+6. Can I see why a match was made?
+7. Can I see when the system refuses/asks for review?
+8. Can I see the human decision?
+9. Can I trace an actual back to evidence?
+10. Can I understand what is synthetic?
+11. Can I understand what is actually implemented?
+12. Does the GitHub repository look maintained and intentional?
+
+Fix the highest-value issues you find.
+
+==================================================
+21. FINAL REPORT
+==================================================
+
+After making changes, give me a concise report with:
+
+### AUDIT
+- what you inspected
+
+### CHANGES MADE
+- exact files changed
+- exact purpose of each change
+
+### FEATURES VERIFIED
+- what actually works
+
+### TEST RESULTS
+- backend
+- frontend
+- smoke/demo
+
+### DEMO FLOW
+- exact evaluator flow
+
+### GITHUB IMPROVEMENTS
+- README
+- docs
+- structure
+- cleanup
+
+### CLAIMS WE CAN SAFELY MAKE
+- factual list
+
+### LIMITATIONS
+- factual list
+
+### REMAINING OPTIONAL IMPROVEMENTS
+Only small, high-value improvements.
+
+Do NOT suggest another giant feature roadmap.
+
+==================================================
+FINAL PRINCIPLE
+
+Polish the project until it feels like:
+
+"A serious engineering prototype built specifically to solve PS122."
+
+NOT:
+
+"A collection of AI features assembled for a hackathon."
+
+The evaluator should leave GitHub understanding one memorable mechanism:
+
+FIELD EVIDENCE
+→ EXECUTION EVENT
+→ EXECUTION TIMELINE
+→ L5/L6 RECONCILIATION
+→ VERIFICATION
+→ HUMAN AUTHORIZATION
+→ VERIFIED ACTUALS
+
+That mechanism is the identity of BRIDGE-X.

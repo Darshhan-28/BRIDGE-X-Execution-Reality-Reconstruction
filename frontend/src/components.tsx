@@ -81,14 +81,37 @@ export function WhyCard({ candidate }: { candidate: Candidate }) {
 }
 
 export function PipelineStrip({ active }: { active?: string }) {
-  const steps = ['FIELD', 'UNDERSTOOD', 'LINKED', 'VERIFIED', 'REVIEW/UPDATED'];
+  const steps = ['FIELD EVIDENCE', 'EXECUTION EVENT', 'RECONCILIATION', 'VERIFICATION', 'AUTHORIZATION'];
   return (
-    <div className="pipeline">
+    <div className="pipeline" aria-label="Field evidence to verified actuals">
       {steps.map((s, i) => (
         <span key={s} className="pstep-wrap">
-          <span className={`pstep ${active === s ? 'active' : ''}`}>{s}</span>
+          <span className={`pstep ${active === s ? 'active' : ''}`} title={
+            [
+              'What decision: is this evidence worth processing?',
+              'What decision: what execution event does the evidence describe?',
+              'What decision: which schedule activity, if any, does it belong to?',
+              'What decision: can this link be trusted against time, dependencies and state?',
+              'What decision: does a planner authorize it as a verified actual?',
+            ][i]
+          }>{s}</span>
           {i < steps.length - 1 && <span className="parrow">→</span>}
         </span>
+      ))}
+    </div>
+  );
+}
+
+/** Compact read-only execution history for one report/activity.
+ *  Assembled only from existing persisted rows (no timeline engine claimed). */
+export function ExecutionHistoryStrip({ items }: { items: { label: string; detail: string; tone: string }[] }) {
+  if (items.length === 0) return <p className="mut">No execution history yet for this evidence — run linking, then record a planner decision in Review.</p>;
+  return (
+    <div className="timeline">
+      {items.map((t, i) => (
+        <div key={i} className="titem">
+          <div className="thead"><Badge tone={t.tone}>{t.label}</Badge><span className="mut">{t.detail}</span></div>
+        </div>
       ))}
     </div>
   );
@@ -98,9 +121,19 @@ export function Loading({ what }: { what: string }) {
   return <p className="mut">Loading {what}…</p>;
 }
 export function ErrorBox({ error, retry }: { error: string; retry?: () => void }) {
+  const hint = /404/.test(error)
+    ? 'Check the code, reseed the demo data, or reload the stored run.'
+    : /422/.test(error)
+      ? 'The request was understood but refused: add a reason, use force for overrides, or review the evidence.'
+      : /409/.test(error)
+        ? 'Seed data or a prior decision is blocking this step — reset the demo or pick another item.'
+        : /Failed to fetch|offline|unreachable/i.test(error)
+          ? 'The API at :8000 looks offline — start the backend and retry.'
+          : 'No compatible schedule activity was found, or the input needs review. Check the evidence or mark it as new/unplanned work.';
   return (
     <div className="error-box">
-      <p>Backend unreachable or request failed: {error}</p>
+      <p>Request needs attention: {error}</p>
+      <p className="mut">{hint}</p>
       {retry && <button type="button" onClick={retry}>Retry</button>}
     </div>
   );

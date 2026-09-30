@@ -1,190 +1,179 @@
-# BRIDGE-X — AI Planning-to-Execution Intelligence Layer
+# BRIDGE-X — Execution Reality Reconstruction
 
-> **Synthetic demonstration data — not real Oil India data.**
-> AI proposes. Verification validates. Humans control consequential decisions.
+> **From Field Evidence → Execution Truth.**
+> Synthetic demonstration data — not real Oil India data.
 
-## Phase 16 — Execution Risk Intelligence (current)
+A field report is not an activity update. **It is evidence of an execution event.**
+BRIDGE-X doesn't simply match the report — **it reconstructs the event**: what happened, where, when, and which L5/L6 schedule activity (if any) it belongs to — then verifies, gates, and routes it to a human for authorization.
 
-`GET /api/risk/project/{code}?level=` and `GET /api/risk/activity/{code}`
-return advisory ATTENTION / WATCH / NORMAL items derived live from
-schedule variance, P15 graph warnings, P7 verification errors, unmatched
-evidence, conflict rows, and synthetic history aggregates — no new
-tables, no probabilities, no predictions, no mutations. The Dashboard
-shows a compact Attention Signals section with per-category filtering.
-
-`GET /api/graph/{code}?depth=1|2&report_code=` returns the deterministic
-local execution neighborhood (activity, predecessors, successors, second
-level, ordered backbone chain) with statuses, dates, FS relationship
-types, stored-state checks (successor-ahead, not-started chain,
-isolation) and, with a report, event-vs-order checks whose messages name
-codes, states, and the REVIEW result. Read-only CPU-only; P7 stays
-authoritative. Linker and Field Intelligence show an Execution Context /
-Dependency Chain strip for the top candidate.
-
-## Phase 15 — Execution Graph Intelligence
-
-## Phase 14 — Adaptive Project Vocabulary
-
-Human-approved vocabulary now contributes bounded bonus evidence to
-future linking (`score = base 8-signal score + vocab bonus`, cap +5.0):
-object (+2.0), action (+1.5), and phrase→activity (+3.0) hits, each with
-approval-count/source-report provenance on WHY cards and a `learned +N`
-badge in the Linker. Only active, approved, same-project rows fire;
-thresholds, margins, granularity, verification, and gates are unchanged
-and still apply. Base scores are persisted separately for audit.
-
-## Phase 11 — Dashboard UI (current)
-
-Dark industrial React + Vite + TS app (`frontend/`, `npm run dev` on
-:5173, API at :8000 or `VITE_API_URL`): Dashboard (live counts, pipeline
-strip, queue buckets, audit tail), Field Intelligence (paste/upload →
-ingest → full pipeline view), Schedule Linker (top-3, margin, WHY signal
-cards, granularity, verification, gate), Review Queue (real
-approve/reject/remap/mark-new/merge with force+reason gating), Schedule
-(planned-vs-actual Gantt + CSV/JSON/P6-XML-prototype exports with a
-validate-before-import disclaimer), Project Memory (learned terms +
-synthetic patterns, all labeled), Audit (filterable timeline + JSON
-export), Time Agent (chat with evidence citations). No mock data, no
-fake buttons — every control hits a real endpoint.
-
-`POST /api/time-agent` answers grounded questions via a deterministic
-intent router and read-only DB tools (started/completed on a date,
-delayed, unmatched, explain-link, conflicts, activity status). Every
-answer carries report_id/activity_id evidence citations; unknown
-questions and empty evidence get graceful guidance, never invention.
-OpenRouter only summarizes retrieved facts (1 retry, then templates);
-without a key the template composer answers fully offline. The LLM has
-no database access and cannot trigger writes. Dashboards and UI arrive
-in Phase 11.
-
-Approvals teach: `approve`/`remap` derive object/phrase mappings
-(e.g. pipe→spool, "erect pipe"→PIP-204-017) into `project_vocabulary`
-with approval counts + source-report evidence (`GET /api/memory/vocabulary`,
-planner-curated `POST`, duplicates reinforce instead of duplicating).
-Nothing is learned from raw LLM output or unreviewed matches.
-`GET /api/memory/patterns` aggregates synthetic execution history
-(planned-vs-actual, overruns, common issues) plus live schedule delays —
-every figure labeled synthetic, never real project data. Conversational
-Time Agent arrives in Phase 10.
-
-`GET /api/review/queue` (buckets HIGH/MEDIUM/LOW/CONFLICT/UNMATCHED) plus
-five explicit actions: `POST /api/review/{approve,reject,remap,mark-new,merge}`.
-Only approvals create `schedule_updates` — as approved records with
-before/after snapshots that never touch the `activities` table. Gate
-PROPOSE + valid verification approves cleanly; REVIEW/UNMATCHED/invalid
-cases need `force=true` plus a written reason (else 422), re-decisions
-need force (else 409). Every action writes an `audit_events` row
-(`GET /api/audit`) with actor, action, IDs, before/after, timestamp and
-reason. Project memory (vocabulary + execution patterns) arrives in
-Phase 9.
-
-Every match run now carries `verification`: six deterministic checks
-(temporal, predecessor/dependency, state-machine, duplicate,
-contradiction, plus planned-vs-actual variance) with all evidence and
-reasons preserved, persisted to `verification_results`. The gate uses
-`config.py` thresholds — HIGH ≥85 + margin ≥15 → PROPOSE, 60–85 or
-margin <15 → REVIEW, <60 → UNMATCHED — and any verification error
-forces REVIEW. Nothing is applied to the schedule; human review of
-consequential decisions arrives in Phase 8.
-
-Every match run now carries a `granularity` verdict: `ONE_TO_ONE`
-(decisive specific evidence → propose completion), `PARTIAL` (explicit
-% → propose progress only, never completion), `ONE_TO_MANY` (broad
-report over an activity cluster → insufficient evidence, planner review,
-group must NEVER be auto-completed), or `NEW_UNPLANNED` (below retrieval
-floor → propose a new activity). Pure deterministic logic on the
-FieldEvent + ranked candidates — no LLM. Verification gates and human
-review arrive in Phases 7–8.
-
-`POST /api/matching/run` (by `report_code`, inline `event`, or raw text;
-`GET /api/matching/{report_code}` reloads the run) consumes the Phase-4
-`FieldEvent` — never the LLM — and returns top-k candidates with scores,
-8-signal breakdowns and WHY lines. Retrieval is TF-IDF + RapidFuzz with
-structured pre-filters; scoring uses the configured weights in
-`config.py`; terminology aliases (pipe→spool, joint→weld) bridge wording
-gaps. Below-floor results are flagged `unmatched`. Granularity,
-verification gates and review arrive in Phases 6–8.
-
-`POST /api/events/extract` (by `report_code` or inline `raw_text`,
-`prefer: auto|llm|fallback`) returns a Pydantic-validated `FieldEvent`
-(action, object, size/tag, location, discipline, dates, status/progress,
-evidence + source report_id) and persists it to `extracted_events`
-(`GET /api/events`). Deterministic fallback parser (abbreviations,
-synonyms, yesterday/date resolution) keeps everything working with no
-API key; OpenRouter adapter (`meta-llama/llama-3.1-8b-instruct:free`,
-JSON-only, 1 retry then fallback) activates when `OPENROUTER_API_KEY`
-is set. Time Agent proper arrives in Phase 10.
-
-`POST /api/reports` (single free-text JSON) and
-`POST /api/reports/analyze` (CSV / XLSX / PDF / TXT upload).
-Flexible spreadsheet headers (`Day/Disc/Site/Narration/...`), raw text
-always preserved verbatim, metadata kept in `meta` JSON.
-PDFs are PyMuPDF text-extraction only — scanned PDFs return
-`inserted: 0` with an explicit `Prototype / OCR required` warning
-(`ocr_required: true`); no OCR dependency. New `meta` column is
-auto-migrated into existing `bridge_x.db` on startup/seed.
-
-1 project (BRX-DEMO-01), 12 WBS nodes, 55 activities
-(Piping 16 / Civil 11 / Electrical 10 / Mechanical 9 / Instrumentation 9),
-34 FS relationships, 35 field reports across 9 categories
-(clean/mismatch/abbreviation/incomplete/ambiguous/duplicate/
-contradiction/partial/unmatched), 8 execution patterns, 3 seeded conflicts.
-All synthetic — not real Oil India data.
-
-```powershell
-# seed / reseed (venv active, in backend/)
-py -m seed.synthetic_project
-# or: POST http://127.0.0.1:8000/api/seed
-# verify: GET http://127.0.0.1:8000/api/dashboard
+```mermaid
+flowchart TD
+    FE["FIELD EVIDENCE<br/>DPR text / CSV / XLSX / PDF / TXT"] --> EE["EXECUTION EVENT<br/>FieldEvent: action, object, size, location, date, status"]
+    EE --> TL["EXECUTION TIMELINE VIEW<br/>read-only trail per report/activity"]
+    TL --> REC["L5/L6 RECONCILIATION<br/>TF-IDF + fuzz + 8-signal score + granularity"]
+    REC --> VER["VERIFICATION (P7)<br/>chronology · dependencies · state · evidence"]
+    VER --> GATE["CONFIDENCE GATE<br/>PROPOSE / REVIEW / UNMATCHED"]
+    GATE --> AUTH["HUMAN AUTHORIZATION<br/>approve · reject · remap · mark-new · merge"]
+    AUTH --> ACT["VERIFIED ACTUALS<br/>schedule_updates records only"]
+    ACT --> MEM["PROJECT MEMORY<br/>approval-only vocabulary + audit trail"]
 ```
 
-## Setup (Windows 11, `py` launcher)
+## Problem
+
+Infrastructure projects are **planned** in structured L5/L6 schedules (Primavera-style: WBS, activities, FS dependencies, planned dates) but **executed** through messy field reports: discipline slang, abbreviations, inconsistent formats, missing dates, and different granularity than the plan.
+
+## Core insight
+
+> **"Don't simply match the report. Reconstruct the event."**
+
+One report ≠ one activity. The same execution can be described five ways; five reports can describe one execution; a report can contradict schedule state entirely. BRIDGE-X therefore inserts an explicit **Execution Event** layer between evidence and schedule.
+
+## Solution
+
+```
+FIELD EVIDENCE → EXECUTION EVENT → TIMELINE VIEW → L5/L6 RECONCILIATION
+→ VERIFICATION → CONFIDENCE GATE → HUMAN AUTHORIZATION → VERIFIED ACTUALS → PROJECT MEMORY
+```
+
+| Stage | What happens | Deterministic or AI-assisted |
+|---|---|---|
+| Ingest | Raw text preserved verbatim (`field_reports`) | Deterministic |
+| Understand | `FieldEvent` extraction — OpenRouter LLM if key set, else regex fallback | AI-assisted, Pydantic-validated, fallback always works |
+| Reconcile | Alias canonicalization → TF-IDF + RapidFuzz retrieval → 8-signal weighted score → granularity verdict | Deterministic (no LLM) |
+| Verify | 5 checks + variance; gate PROPOSE/REVIEW/UNMATCHED | Deterministic, authoritative |
+| Authorize | Planner approve/reject/remap/mark-new/merge with force+reason gating | Human-controlled |
+| Remember | Approvals teach project vocabulary; every action audited | Approval-only learning |
+
+## Why simple report-to-activity matching is insufficient
+
+- **Terminology differs:** site says "pipe", schedule says "spool"; "joint" vs "weld".
+- **Granularity differs:** "R204 piping done" covers six activities; explicit "60% complete" must propose progress only, never completion.
+- **Multiple reports describe one execution:** duplicates must be detected, mergeable, never double-counted.
+- **Reports contradict schedule state:** welding claimed complete while predecessor erection never started.
+- **Dependencies matter:** FS chains (`017 → 018 → 019 → 020`) constrain what can legally be claimed.
+- **Some work is unplanned:** below-floor evidence proposes a *new* activity record, never a silent schedule edit.
+
+## Core capabilities (all implemented, all demonstrable)
+
+- Multi-format ingestion (text/CSV/XLSX/PDF/TXT) with verbatim evidence + scanned-PDF OCR refusal
+- `FieldEvent` extraction with offline fallback (works with no API key)
+- Explainable 8-signal matching with WHY cards (weights in `backend/app/config.py`)
+- Granularity verdicts: `ONE_TO_ONE / PARTIAL / ONE_TO_MANY / NEW_UNPLANNED` (groups never auto-complete)
+- P7 verification: temporal, dependency, state-machine, duplicate, contradiction + variance; errors force REVIEW
+- Confidence gate: HIGH ≥85 + margin ≥15 → PROPOSE; 60–85 or margin <15 → REVIEW; <60 → UNMATCHED
+- Human review: 5 gated actions, force+reason overrides, re-decision protection, full audit trail; only approvals create `schedule_updates` (plan table never overwritten)
+- Project memory: approval-only vocabulary (+2.0/+1.5/+3.0, cap +5.0, thresholds unchanged) + synthetic pattern aggregates
+- Read-only execution graph neighborhoods + evidence-based attention board (advisory, not predictive)
+- Grounded Q&A with citations (read-only tools; LLM only summarizes retrieved facts, template composer works offline)
+
+## Matching
+
+TF-IDF cosine + RapidFuzz token-set retrieval (floors 0.10/40, top-10) with structured pre-filters, then an 8-signal weighted score (semantic 0.25, lexical 0.20, discipline 0.15, location 0.12, object 0.10, size/tag 0.08, WBS 0.05, state 0.05; floor 45.0). Static aliases bridge wording gaps (`pipe→spool`, `joint→weld`, `copper→cable`, `ct→cable tray`, `fdn/footing/rcc→foundation`). Approved project vocabulary adds bounded bonus evidence with `[vocab]` provenance lines. Every candidate carries per-signal WHY evidence — the UI shows *why* a match was made, and the base score is persisted separately for audit.
+
+## Granularity
+
+- `ONE_TO_ONE` — decisive specific evidence → may propose completion
+- `PARTIAL` — explicit % → proposes progress only, never completion
+- `ONE_TO_MANY` — broad report over an activity cluster → insufficient evidence, planner review, group is NEVER auto-completed
+- `NEW_UNPLANNED` — below retrieval floor → proposes a new-activity record
+
+Pure deterministic logic on the `FieldEvent` + ranked candidates. No LLM.
+
+## Verification
+
+Six deterministic checks (temporal, predecessor/dependency, state-machine, duplicate, contradiction, plus informational planned-vs-actual variance), all evidence and reasons preserved in `verification_results`. Any verification error forces REVIEW regardless of score. Nothing is applied to the schedule at this stage.
+
+## Human review
+
+Approve / reject / remap (re-verifies target) / mark-new (proposal record, never an activity row) / merge (attaches `merged_evidence`). REVIEW/UNMATCHED/invalid cases need `force=true` + written reason (else 422); re-decisions need force (else 409). Every action writes an `audit_events` row (actor, action, IDs, before/after, timestamp, reason).
+
+## Project memory
+
+Approvals (and planner-curated terms) teach: object mappings (`pipe→spool`), action reinforcement, phrase→activity (`"erect pipe"→PIP-204-017`), deduplicated by approval-count + source-report evidence. Nothing is learned from raw LLM output or unreviewed matches. `GET /api/memory/patterns` aggregates are all labeled synthetic.
+
+## Execution graph
+
+Read-only FS neighborhoods (`GET /api/graph/{code}?depth=1|2&report_code=`): predecessors, successors, second level, ordered backbone chain, stored-state and event-vs-order checks whose messages name codes, states, and the REVIEW result. P7 stays authoritative; the graph explains, never decides.
+
+## Execution risk
+
+Evidence-based **attention scoring, NOT predictive certainty**: signals VERIFICATION_CONFLICT:3, CONTRADICTION:3, DEPENDENCY_RISK:2, SCHEDULE_VARIANCE:2, UNMATCHED_EXECUTION:1, REPEATED_EXECUTION_ISSUE:1 (synthetic aggregates only); score capped at 10; ATTENTION (≥4 or conflict) / WATCH (≥2) / NORMAL. No probabilities, no predictions, no new tables, no mutations.
+
+## OIL public domain knowledge
+
+Two strictly separated classes:
+
+| Class | Lives in | Label | Meaning |
+|---|---|---|---|
+| REAL_PUBLIC | `source_documents` + `domain_terms` (4 fetched sources, 49 curated terms) | `source_type='REAL_PUBLIC'` | Public Oil India terminology reference with full provenance. LLM context only. Never execution data. |
+| SYNTHETIC | `field_reports` (DPR-*), `activities`, `execution_history` | `source_type='SYNTHETIC'` | Regression/demo fixtures. Never presented as real. |
+| USER_PROVIDED | `field_reports` (TXT-*/ING-*) via ingest | `source_type='USER_PROVIDED'` | The only live field-execution input. |
+
+Public documents never become DPRs, schedules, dates, or progress. The fallback parser never sees domain context (offline output byte-identical). Promotion into matching vocabulary is an explicit audited human act. Details: `docs/OIL_PUBLIC_DATA.md`.
+
+## Technology stack
+
+Backend: FastAPI + SQLAlchemy + SQLite, Pydantic, scikit-learn (TF-IDF), RapidFuzz, pandas/openpyxl/PyMuPDF ingestion, httpx (OpenRouter), pytest. Frontend: React 19 + Vite 8 + TypeScript + react-router-dom. CPU-only, offline-first, no embeddings, no vector DB, no background workers.
+
+## Running locally (Windows 11, `py` launcher)
+
+Prerequisites: Python 3.13 (`py`), Node 24 + npm.
 
 ```powershell
-# backend
+# one-time setup (or run scripts\setup.ps1)
 Set-Location D:\SIH26122\backend
 Copy-Item .env.example .env
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 py -m pip install -r requirements.txt
-py -m uvicorn app.main:app --reload --port 8000
-# health: http://127.0.0.1:8000/api/health  docs: /docs
-
-# backend tests (new terminal, venv active)
-Set-Location D:\SIH26122\backend
-py -m pytest -q
-
-# frontend
 Set-Location D:\SIH26122\frontend
 npm install
-npm run dev
-# http://localhost:5173  (expects API at http://127.0.0.1:8000)
-
-# frontend smoke (backend must be running; reseeds dev DB, runs demos)
-Set-Location D:\SIH26122\frontend
-npm run smoke
 ```
 
-## 2-minute demo script
+```powershell
+# every time — terminal 1 (backend)
+Set-Location D:\SIH26122\backend
+.\.venv\Scripts\Activate.ps1
+py -m uvicorn app.main:app --reload --port 8000
+# health: http://127.0.0.1:8000/api/health   docs: /docs
 
-Reset first: Dashboard → **Reset demo data** (or `POST /api/seed`).
+# terminal 2 (frontend)
+Set-Location D:\SIH26122\frontend
+npm run dev
+# UI: http://localhost:5173  (expects API at http://127.0.0.1:8000 or VITE_API_URL)
+```
 
-1. **Clean match.** Linker → **Demo: Clean match** (`DPR-2026-09-18-01`):
-   erect/spool/24"/R-204 → `PIP-204-017`, WHY signals, `ONE_TO_ONE`,
-   verification passes (+6d variance), gate REVIEW on margin.
-   Review Queue → approve with force + reason → audit trail + learned
-   vocabulary (`erect spool` → `PIP-204-017` in Memory).
-2. **Ambiguous.** Linker → **Demo: Ambiguous** (`DPR-2026-09-19-19`):
-   tight sub-60 cluster → `ONE_TO_MANY`, insufficient evidence,
-   group is never auto-completed. This is BRIDGE-X refusing to guess.
-3. **Contradiction.** Linker → **Demo: Dependency error**
-   (`DPR-2026-09-18-26`): welding reported complete while predecessor
-   `PIP-204-018` never started → verification error forces REVIEW.
-   Time Agent → *"What conflicts were detected?"* for cited evidence.
+Demo workflow: open UI → **Reset demo data** (or `POST /api/seed`) → follow the demo scenario below. No API key needed; set `OPENROUTER_API_KEY` in `backend\.env` only to enable the optional LLM path (default free model in `.env.example`). Never commit `.env`.
 
-Everything above runs with no API key (fallback-only mode).
+## Testing (verified 2026-09-30)
 
-## Env
+- Backend: **138 tests, all green** (`.\.venv\Scripts\python.exe -m pytest -q` from `backend/`): demo 4, events 12, execution_graph 9, execution_risk 12, granularity 8, health 2, ingestion 7, matching 9, memory 9, oil_public_data 11, review 10, seed 5, time_agent 13, verification 15, vocabulary_integration 12.
+- Frontend: `npm run build` clean — strict `tsc -b` + Vite, 36 modules.
+- Smoke: `npm run smoke` — **29 checks pass** (2 build artifacts, 6 export unit checks, 21 live-API contracts incl. all 3 demos, gating 422s, vocab learning, cited agent answers). Requires backend on :8000.
+- Known cosmetic warnings only: Starlette anyio deprecation, PyMuPDF SWIG `__module__`.
 
-See `backend/.env.example`. Never commit `.env` or real keys.
-Default model: `meta-llama/llama-3.1-8b-instruct:free`.
+## Demo scenario (2–3 minutes, works offline)
+
+Reset first: Overview → **Reset demo data** (or `POST /api/seed`).
+
+1. Load demo project — Overview shows 55 activities, 35 reports, queue buckets.
+2. Inspect planned L5/L6 activities — Schedule page (planned-vs-actual Gantt).
+3. Ingest/select field report — Reconciliation → **Demo: Clean match** (`DPR-2026-09-18-01`: *"24 inch spool erection completed at R-204"*).
+4. Extract execution event — event card (type/action/object/size/location/date, extractor badge).
+5. Observe candidate match — top `PIP-204-017` with score bar + WHY signal cards.
+6. Inspect confidence — `ONE_TO_ONE`, margin shown honestly (gate REVIEW on margin <15).
+7. Inspect verification — valid, +6d variance detail, no errors.
+8. Approve with force + reason → 422 without it (gating proven) → authorized actual + audit row + `erect spool→PIP-204-017` learned (Project Memory).
+9. Ambiguity refusal — **Demo: Ambiguous** (`DPR-2026-09-19-19`): tight sub-60 cluster → `ONE_TO_MANY`, never auto-completes.
+10. Contradiction — **Demo: Dependency error** (`DPR-2026-09-18-26`): verification error naming `PIP-204-018` forces REVIEW; graph backbone `017→018→019→020` explains why; risk board flags ATTENTION. Evidence Q&A → *"What conflicts were detected?"* returns cited evidence.
+
+## Limitations / prototype scope (honest)
+
+- All schedules, DPRs, conflicts, patterns, and seeded vocabulary origins are **synthetic fixtures**, labeled as such everywhere.
+- No first-class timeline/state-machine engine — the UI shows a **read-only execution-history trail** assembled from stored rows, not a temporal reasoner.
+- Scanned PDFs return `inserted: 0` + `Prototype / OCR required` (no OCR dependency by design).
+- P6 XML export is a minimal prototype — validate before any production import; this is not a Primavera replacement.
+- External LLM is optional and not guaranteed; the system runs fully offline in fallback + template mode.
+- Single SQLite DB, single demo project, CPU-only laptop scope; no multi-project enterprise deployment.
+- Relative date words ("yesterday") resolve against wall-clock date; demos use explicit dates for reproducibility.
+- No browser-automation tests; UI states covered by code review + smoke contracts.

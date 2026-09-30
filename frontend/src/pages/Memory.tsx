@@ -44,7 +44,8 @@ export default function Memory() {
   return (
     <div>
       <h2>Project Memory</h2>
-      <PipelineStrip active="REVIEW/UPDATED" />
+      <p className="mut">What decision: which learned terms can be trusted in future reconciliation? Only human-approved vocabulary teaches.</p>
+      <PipelineStrip active="AUTHORIZATION" />
       <div className="banner">Synthetic demonstration data — not real project data. Vocabulary is learned only from human approvals.</div>
       <div className="cols">
         <section className="card">

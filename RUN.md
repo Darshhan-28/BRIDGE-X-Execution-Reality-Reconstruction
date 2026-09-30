@@ -1,11 +1,12 @@
 # How to Run BRIDGE-X
 
 > Works fully offline with no API key (fallback mode). Two terminals needed.
+> Thin helpers in `scripts/` wrap the same commands below. Evaluator path: `docs/EVALUATOR_GUIDE.md`.
 
 ## Prerequisites
 
 - Windows 11, `py` launcher (Python 3.13), Node 24 + npm
-- First-time setup only:
+- First-time setup only (`scripts\setup.ps1` runs the same steps):
   ```powershell
   Set-Location D:\SIH26122\backend
   Copy-Item .env.example .env
@@ -18,14 +19,14 @@
 
 ## Start (every time)
 
-Terminal 1 — backend:
+Terminal 1 — backend (`scripts\run-backend.ps1`):
 ```powershell
 Set-Location D:\SIH26122\backend
 .\.venv\Scripts\Activate.ps1
 py -m uvicorn app.main:app --reload --port 8000
 ```
 
-Terminal 2 — frontend:
+Terminal 2 — frontend (`scripts\run-frontend.ps1`):
 ```powershell
 Set-Location D:\SIH26122\frontend
 npm run dev
@@ -37,7 +38,8 @@ npm run dev
 - API health: http://127.0.0.1:8000/api/health → `"status": "ok"`
 - API docs: http://127.0.0.1:8000/docs
 - Seed demo data (fresh reset): `POST http://127.0.0.1:8000/api/seed`
-  or Dashboard → **Reset demo data**
+  or Dashboard → **Reset demo data** or `scripts\seed-demo.ps1`
+- Full verification: `scripts\test.ps1` (pytest + build + smoke)
 
 ## Stop
 

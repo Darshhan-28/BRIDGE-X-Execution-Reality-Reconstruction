@@ -29,8 +29,9 @@ export default function Audit() {
 
   return (
     <div>
-      <h2>Audit Trail</h2>
-      <PipelineStrip active="REVIEW/UPDATED" />
+      <h2>Audit Trail (Provenance)</h2>
+      <p className="mut">What decision: can this actual be traced back to evidence, verification, and the planner who authorized it?</p>
+      <PipelineStrip active="AUTHORIZATION" />
       <div className="formrow">
         <label>Action
           <select value={action} onChange={(e) => setAction(e.target.value)}>

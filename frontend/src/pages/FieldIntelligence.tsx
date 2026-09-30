@@ -66,11 +66,12 @@ export default function FieldIntelligence() {
   }
 
   const ev: FieldEvent | undefined = run?.event;
-  const stage = step === 'matched' ? 'REVIEW/UPDATED' : step === 'ingested' ? 'UNDERSTOOD' : 'FIELD';
+  const stage = step === 'matched' ? 'AUTHORIZATION' : step === 'ingested' ? 'EXECUTION EVENT' : 'FIELD EVIDENCE';
 
   return (
     <div>
-      <h2>Field Intelligence</h2>
+      <h2>Field Evidence</h2>
+      <p className="mut">What decision: is this report usable evidence, and what execution event does it describe?</p>
       <PipelineStrip active={stage} />
       <section className="card">
         <h3>1 · Ingest field evidence</h3>
@@ -114,7 +115,8 @@ export default function FieldIntelligence() {
             {ev.warnings.map((w, i) => <p key={i} className="warnline">{w}</p>)}
           </section>
           <section className="card">
-            <h3>Linked candidates</h3>
+            <h3>Reconciliation candidates</h3>
+            {run.candidates.length === 0 && <p className="mut">No compatible schedule activity was found. Review the evidence or mark it as new/unplanned work.</p>}
             {run.candidates.map((c) => (
               <div key={c.activity_code} className="cand">
                 <div className="row"><code>{c.activity_code}</code><ScoreBar score={c.score} /></div>
@@ -124,12 +126,12 @@ export default function FieldIntelligence() {
             {run.unmatched && <p className="warnline">{run.reason}</p>}
           </section>
           <section className="card">
-            <h3>Execution Context / Dependency Chain</h3>
-            {!graph && <p className="mut">Chain loads with the top candidate.</p>}
+            <h3>Execution context / dependency chain</h3>
+            {!graph && <p className="mut">No dependency context yet — the chain loads with the top candidate.</p>}
             {graph && <ChainStrip graph={graph} />}
           </section>
           <section className="card">
-            <h3>Verified → decision</h3>
+            <h3>Verification → planner decision</h3>
             {run.verification && (
               <DecisionBanner gate={run.verification.gate} granularityType={run.granularity.type} />
             )}
@@ -142,7 +144,7 @@ export default function FieldIntelligence() {
                 {run.verification.variance.details.map((d, i) => <p key={i} className="mut">{d}</p>)}
               </>
             )}
-            <p className="mut">Consequential decisions happen in the <a href="/review">Review Queue</a>
+            <p className="mut">Consequential decisions happen in <a href="/review">Planner Decision</a>
               {run.verification && <> · gate: <b>{run.verification.gate.decision}</b></>}.</p>
           </section>
         </>

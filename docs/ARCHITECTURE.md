@@ -1,98 +1,102 @@
-# ARCHITECTURE.md — actual architecture (verified against code)
+# ARCHITECTURE — BRIDGE-X Execution Reality Reconstruction
 
-## Backend (`backend/app/`, FastAPI + SQLAlchemy + SQLite)
+> Verified against code (`backend/app/*`, `frontend/src/*`). Nothing here is aspirational.
 
-| Module | Responsibility |
-|---|---|
-| `main.py` | App, lifespan (`create_all` + `ensure_columns`), health `/`, CORS for :5173 |
-| `config.py` | `Settings` (.env): versions, DB URL, OpenRouter, 8 matching weights, 3 gate thresholds |
-| `db.py` | Engine, `SessionLocal`, `get_db`, additive `ensure_columns()` migration |
-| `models.py` | 16 tables (see `DATA_MODEL.md`: 14 pipeline + `source_documents`/`domain_terms` REAL_PUBLIC reference) |
-| `routers.py` | All ~31 REST routes (see `API_REFERENCE.md`) |
-| `ingestion.py` | Text/CSV/XLSX/PDF parsing, header aliases, date normalization, report codes |
-| `llm/base.py` | `FieldEvent` schema + `extract_field_event()` dispatch + agent delegate |
-| `llm/fallback.py` | Deterministic regex event parser (offline core) |
-| `llm/openrouter.py` | JSON-only LLM adapter, 2 attempts → fallback, `_post` seam for tests |
-| `matching/fingerprint.py` | Static alias canonicalization + fingerprint builder |
-| `matching/candidate_retrieval.py` | TF-IDF cosine + RapidFuzz + structured pre-filters, top-10 |
-| `matching/scorer.py` | 8-signal weighted score, `UNMATCHED_FLOOR=45.0`, `match_event()` |
-| `matching/granularity.py` | ONE_TO_ONE / ONE_TO_MANY / PARTIAL / NEW_UNPLANNED resolver |
-| `matching/vocabulary_boost.py` | P14 bounded learned-vocabulary bonus + provenance |
-| `verification/` | 5 checks + variance + gate + `pipeline.verify_proposal()` (P7, authoritative) |
-| `review.py` | Queue buckets, 5 gated actions, audit writer, learning hook |
-| `memory.py` | Approval-only vocabulary learning + synthetic pattern aggregates |
-| `time_agent.py` / `time_agent_tools.py` | Regex intent router + 7 read-only DB tools + LLM/template composer |
-| `execution_graph.py` | P15 read-only FS neighborhoods + chain checks |
-| `execution_risk.py` | P16 advisory attention board, derived live, no tables |
-| `seed/synthetic_project.py` | Idempotent synthetic dataset (1/12/55/34/35/8/3) |
-| `seed/oil_public_data.py` | Idempotent REAL_PUBLIC knowledge load (4 sources, 49 terms; never DPRs/schedule) + `domain_knowledge.py` keyword retrieval (LLM context only, fallback untouched) |
-
-## Frontend (`frontend/src/`, React 19 + Vite 8 + TS + react-router-dom)
-
-Routes (`App.tsx`): `/` Dashboard, `/field` FieldIntelligence,
-`/linker` Linker, `/review` Review, `/schedule` Schedule, `/memory` Memory,
-`/audit` Audit, `/agent` Agent (+ `*` fallback). Shared `components.tsx`
-(Badge, GateBadge, DecisionBanner, ScoreBar, WhyCard, PipelineStrip,
-ChainStrip, Loading, ErrorBox, Empty). `api.ts` is a thin typed fetch
-client (`VITE_API_URL || http://127.0.0.1:8000`); `export.ts` builds
-CSV/P6-XML downloads client-side. `smoke.mjs` runs build-artifact,
-real-source export, and live-API contract checks.
-
-## Processing flow (field report → intelligence)
-
-1. **Ingest** → `field_reports` row (raw verbatim + meta, `source_type` SYNTHETIC|USER_PROVIDED).
-2. **Understand** → `FieldEvent` (LLM or fallback) → `extracted_events`.
-3. **Match** → fingerprints → candidates (top-k, default 3) → `match_candidates`.
-4. **Granularity** → shape verdict attached to the run.
-5. **Verify + gate** → P7 result → `verification_results`.
-6. **Review** → human action → `schedule_updates` (records only) + `review_decisions` + `audit_events` + vocabulary learning.
-7. **Intelligence** → graph neighborhoods, risk board, agent answers — all read from the above.
-
-REAL_PUBLIC side flow (reference only, never execution):
-`source_documents`/`domain_terms` → keyword retrieval → OpenRouter LLM
-context + `domain_provenance` → existing understand/match/verify/review
-pipeline unchanged. Fallback never sees domain context. Details:
-`OIL_PUBLIC_DATA.md`.
-
-## ASCII diagram
-
-```text
-                +------------------+     +------------------+
-                |  Field evidence  |     | L5/L6 schedule   |
-                | text/csv/xlsx/pdf|     | 55 acts, 34 FS   |
-                +--------+---------+     +--------+---------+
-                         v                        v
-                +--------+------------------------+---------+
-                | INGEST (verbatim)  UNDERSTAND (LLM|regex)|
-                +--------+------------------------+---------+
-                         v
-              +----------+-----------+      +----------------+
-              | MATCH (TF-IDF+fuzz, | ---> | learned vocab  |
-              | 8 signals, +bonus)  | <--- | (approved only)|
-              +----------+-----------+      +----------------+
-                         v
-              GRANULARITY -> VERIFY (P7) -> GATE (85/60/15)
-                         v
-              +----------+-----------+      +----------------+
-              | HUMAN REVIEW (5 acts)| ---> | audit + memory |
-              +----------+-----------+      +----------------+
-                         v
-          +--------------+---------------+------------------+
-          v              v               v                  v
-   Dashboard/UI   Graph (P15)     Risk board (P16)   Time Agent
+```mermaid
+flowchart LR
+    subgraph IN["INPUTS"]
+        DPR["Field reports<br/>text / CSV / XLSX / PDF / TXT"]
+        SCHED["L5/L6 schedule<br/>55 activities · 34 FS"]
+        OIL["OIL public docs<br/>REAL_PUBLIC reference only"]
+    end
+    DPR --> ING["INGEST<br/>verbatim + meta"]
+    ING --> EVT["EVENT EXTRACTION<br/>LLM-or-fallback FieldEvent"]
+    OIL -.->|"LLM context only"| EVT
+    EVT --> NORM["NORMALIZATION<br/>aliases · fingerprints"]
+    SCHED --> RET["CANDIDATE RETRIEVAL<br/>TF-IDF + RapidFuzz + filters"]
+    NORM --> RET
+    RET --> SCORE["8-SIGNAL SCORE<br/>+ bounded vocab bonus"]
+    SCORE --> GRAN["GRANULARITY<br/>1:1 / PARTIAL / 1:MANY / NEW"]
+    GRAN --> VER["P7 VERIFICATION<br/>5 checks + variance"]
+    VER --> GATE["CONFIDENCE GATE<br/>85/60/15"]
+    GATE --> REV["HUMAN REVIEW<br/>5 actions, force+reason"]
+    REV --> ACT["AUTHORIZED ACTUALS<br/>records only"]
+    REV --> MEM["MEMORY + AUDIT<br/>vocab + trail"]
+    ACT --> UI["Graph · Risk · Q&A<br/>read-only"]
+    MEM --> UI
 ```
 
-## Component properties (do not invent others)
+## End-to-end data flow
 
-| Component | Deterministic | LLM-assisted | Read-only | Write-capable | Human-controlled |
-|---|---|---|---|---|---|
-| Ingestion, fallback parser | yes | no | writes reports only | reports | no |
-| OpenRouter adapter | no | yes | no network writes to DB | no | no |
-| Matching (+P14 bonus) | yes | no | reads | match/verification rows | no |
-| Granularity, P7, gate | yes | no | reads | verification rows | no |
-| Review actions | yes | no | — | updates/decisions/audit/vocab | **yes (actor+reason)** |
-| Memory learning | yes | no | — | vocabulary (approvals only) | **yes** |
-| Graph, risk, agent tools | yes | agent composes only | **yes** | none | no |
+1. **Ingest** → `field_reports` row (raw text verbatim, `source_type` SYNTHETIC|USER_PROVIDED, `meta` JSON). Header aliases + 10 date formats; scanned PDF → `inserted: 0` + OCR warning.
+2. **Understand** → `FieldEvent` (action, object, size/tag, location, discipline, date, status/progress, evidence + source report_id) persisted to `extracted_events` with extractor tag.
+3. **Normalize + retrieve** → alias canonicalization + fingerprint → TF-IDF cosine + RapidFuzz token-set (floors 0.10/40, structured pre-filters) → top-10 candidates.
+4. **Score** → 8-signal weighted sum (config weights, floor 45.0) + bounded learned-vocabulary bonus (cap +5.0, base persisted separately) → top-k with WHY lines → `match_candidates`.
+5. **Granularity** → pure-function verdict attached to every run (group cap 6, cluster band 8.0, margin 5.0, high-safe 75.0).
+6. **Verify + gate** → P7 result persisted to `verification_results`; gate PROPOSE/REVIEW/UNMATCHED, errors force REVIEW.
+7. **Review** → human action → `schedule_updates` (before/after snapshots; `activities` provably untouched) + `review_decisions` + `audit_events` + vocabulary learning.
+8. **Intelligence** → graph neighborhoods, risk board, agent answers — all derived live from the above, all read-only.
 
-There are no embeddings, vector DBs, background workers, or external
-services in the architecture. The heaviest compute is demo-time.
+REAL_PUBLIC side flow: `source_documents`/`domain_terms` → keyword retrieval → OpenRouter LLM context + `domain_provenance`. Fallback parser never sees it. Unpromoted terms never influence matching.
+
+## API boundaries
+
+| Boundary | Routes | Writes |
+|---|---|---|
+| System/seed | `GET /api/health`, `GET /`, `POST /api/seed` | Seed wipes runtime tables; knowledge upserted, never wiped |
+| Schedule reads | projects, activities(+detail), reports, conflicts, dashboard | None |
+| Ingestion | `POST /api/reports`, `POST /api/reports/analyze` | `field_reports` only |
+| Understanding/matching | `POST /api/events/extract`, `GET /api/events`, `POST /api/matching/run`, `GET /api/matching/{code}` | events, candidates, verification rows — never schedule |
+| Review (only consequential writes) | queue, decisions, 5 POST actions, schedule-updates, audit | updates/decisions/audit/vocab, all audited |
+| Memory | vocabulary GET/POST, patterns GET | approvals/curated terms only |
+| Knowledge | sources, terms, lookup, promote | promote writes vocab + audit row |
+| Intelligence | time-agent POST, graph GET, risk GETs | None (read-only) |
+
+Errors: 404 unknown, 422 bad input / gating refusal, 409 no-seed / re-decision. Full reference: `docs/API_REFERENCE.md`.
+
+## Persistence
+
+SQLite via SQLAlchemy. 16 tables: `projects`, `wbs_nodes`, `activities`, `activity_relationships`, `field_reports` (+`meta`), `execution_history`, `conflicts`, `extracted_events`, `match_candidates` (+`base_score`/`vocab_bonus`/`vocab_hits_json`), `verification_results`, `schedule_updates`, `review_decisions`, `audit_events`, `project_vocabulary` (+`is_active`), `source_documents`, `domain_terms`. Additive `ensure_columns()` migration runs on startup/seed so existing `bridge_x.db` files upgrade safely. `POST /api/seed` is idempotent (wipe + insert synthetic baseline; knowledge upsert only).
+
+## Deterministic vs AI-assisted
+
+| Component | Deterministic | LLM-assisted | Read-only | Human-controlled |
+|---|---|---|---|---|
+| Ingestion, fallback parser | yes | no | writes reports only | no |
+| OpenRouter adapter (JSON-only, 1 retry → fallback, 15 s timeout) | no | yes | no DB writes | no |
+| Matching + vocab bonus | yes | no | reads | no |
+| Granularity, P7, gate | yes | no | reads | no |
+| Review actions | yes | no | — | **yes (actor+reason)** |
+| Memory learning | yes | no | — | **yes** |
+| Graph, risk, agent tools | yes | agent composes only | **yes** | no |
+
+No embeddings, vector DBs, background workers, or external services. Heaviest compute is demo-time TF-IDF.
+
+## Failure handling
+
+- No API key → full fallback + template-agent mode (proven by offline test + smoke).
+- LLM malformed/rate-limited/timed-out → 1 retry, then deterministic fallback; never raises to callers.
+- Scanned PDF → explicit `ocr_required` refusal, never silent garbage.
+- Empty DB → 409 "POST /api/seed first".
+- Missing verification/target → 422; gated override without force+reason → 422; re-decision → 409; unknown codes → 404.
+- Frontend: busy-guarded buttons, loading/empty/error states with retry on every page; API-offline banner.
+
+## Provenance + audit trail
+
+Every consequential fact carries its source: events store `report_id` + evidence text; candidates store base score, vocab hits, signals, WHY; verification stores full check outputs; `schedule_updates` store before/after snapshots; `audit_events` store actor, action, IDs, before/after, timestamp, reason. REAL_PUBLIC terms carry source_id → title/URL/publisher/dates; synthetic rows carry `synthetic`/`source_type` flags surfaced as UI badges.
+
+## Security considerations
+
+- `.env.example` is keyless; real keys live in gitignored `backend/.env`, never committed; health endpoint reports only `configured`/`fallback-only`, never the key.
+- CORS allowlist: `localhost:5173` + `127.0.0.1:5173` only.
+- Uploads: extension allowlist, empty-file rejection, size bounded by request, PDFs text-extracted (no macro/OCR execution), filenames kept in `meta` not on disk.
+- DB access: parameterized ORM only, no raw SQL from user input; read-only tools for agent/graph/risk have no write path.
+- Overrides (`force=true`) are first-class audited events with required reasons — not backdoors.
+
+## Offline / fallback behavior
+
+With empty `OPENROUTER_API_KEY`: regex fallback parser, TF-IDF/RapidFuzz matching, all gates, template agent composer, graph + risk — everything the 2-minute demo needs. Domain-knowledge context is skipped entirely, so offline output is byte-identical with or without knowledge loaded.
+
+## Module map
+
+`main.py` (app/lifespan/health/CORS) · `config.py` (weights, thresholds) · `db.py` (engine/session/migration) · `models.py` (16 tables) · `routers.py` (~31 routes) · `ingestion.py` · `llm/{base,fallback,openrouter}.py` · `matching/{fingerprint,candidate_retrieval,scorer,granularity,vocabulary_boost}.py` · `verification/` (P7) · `review.py` · `memory.py` · `time_agent{,_tools}.py` · `execution_graph.py` · `execution_risk.py` · `domain_knowledge.py` · `seed/{synthetic_project,oil_public_data}.py`. Frontend: 8 routed pages + shared `components.tsx` + typed `api.ts` + client-side `export.ts`; `smoke.mjs` contract suite.

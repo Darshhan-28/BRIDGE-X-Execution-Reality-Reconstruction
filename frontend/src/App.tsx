@@ -12,14 +12,14 @@ import Review from './pages/Review';
 import Schedule from './pages/Schedule';
 
 const NAV: [string, string][] = [
-  ['/', 'Dashboard'],
-  ['/field', 'Field Intel'],
-  ['/linker', 'Linker'],
-  ['/review', 'Review'],
+  ['/', 'Overview'],
+  ['/field', 'Field Evidence'],
+  ['/linker', 'Reconciliation'],
+  ['/review', 'Planner Decision'],
   ['/schedule', 'Schedule'],
-  ['/memory', 'Memory'],
+  ['/memory', 'Project Memory'],
   ['/audit', 'Audit'],
-  ['/agent', 'Time Agent'],
+  ['/agent', 'Evidence Q&A'],
 ];
 
 export default function App() {
@@ -34,7 +34,7 @@ export default function App() {
       <header className="bx-header">
         <Link to="/" className="brand">
           <h1>BRIDGE-X</h1>
-          <p>Planning-to-Execution Intelligence</p>
+          <p>Execution Reality Reconstruction · Field Evidence → Execution Truth</p>
         </Link>
         <nav>
           {NAV.map(([to, label]) => (
@@ -62,7 +62,7 @@ export default function App() {
         </Routes>
       </main>
       <footer className="mut">
-        AI proposes. Verification validates. Humans control consequential decisions. ·
+        Execution Reality Reconstruction: Field Evidence → Execution Event → L5/L6 Reconciliation → Verification → Human Authorization → Verified Actuals. ·
         Synthetic demonstration data — not real Oil India data.
       </footer>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import type { ExecGraph, FieldReport, MatchRun } from '../types';
-import { Badge, ChainStrip, DecisionBanner, Empty, ErrorBox, GateBadge, Loading, PipelineStrip, ScoreBar, WhyCard } from '../components';
+import { Badge, ChainStrip, DecisionBanner, Empty, ErrorBox, ExecutionHistoryStrip, GateBadge, Loading, PipelineStrip, ScoreBar, WhyCard } from '../components';
 
 const DEMOS: [string, string, string][] = [
   ['DPR-2026-09-18-01', 'Clean match', 'spool erection → PIP-204-017'],
@@ -14,6 +14,7 @@ export default function Linker() {
   const [code, setCode] = useState('DPR-2026-09-18-01');
   const [run, setRun] = useState<MatchRun | null>(null);
   const [graph, setGraph] = useState<ExecGraph | null>(null);
+  const [history, setHistory] = useState<{ label: string; detail: string; tone: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -32,7 +33,7 @@ export default function Linker() {
   async function link(loadStored = false, preset = '') {
     const target = preset || code;
     if (!target) return;
-    setBusy(true); setError(''); setGraph(null);
+    setBusy(true); setError(''); setGraph(null); setHistory([]);
     try {
       if (preset) setCode(preset);
       const m = loadStored ? await api.matchGet(target) : await api.matchRun({ report_code: target });
@@ -41,6 +42,23 @@ export default function Linker() {
         try { setGraph(await api.graph(m.candidates[0].activity_code, 2, target)); }
         catch { setGraph(null); }
       }
+      try {
+        const [trail, ups] = await Promise.all([
+          api.audit({ report_code: target }),
+          api.updates(target),
+        ]);
+        setHistory([
+          { label: 'FIELD EVIDENCE', detail: `${target} · ${m.event.evidence_text.slice(0, 120)}`, tone: 'mut' },
+          { label: 'EXECUTION EVENT', detail: `${m.event.event_type} · ${m.event.action || '—'}/${m.event.object || '—'} · ${m.event.event_date || '—'} (${m.event.extractor})`, tone: 'mut' },
+          ...m.candidates.slice(0, 3).map((c) => ({
+            label: `CANDIDATE #${c.rank}`, detail: `${c.activity_code} · score ${c.score} (base ${c.base_score ?? c.score}${(c.vocab_bonus || 0) > 0 ? `, learned +${c.vocab_bonus}` : ''})`, tone: 'warn' as string,
+          })),
+          { label: m.granularity.type, detail: m.granularity.reason, tone: 'mut' },
+          ...(m.verification ? [{ label: `VERIFICATION ${m.verification.valid ? 'PASS' : 'FAIL'}`, detail: m.verification.valid ? `gate ${m.verification.gate.decision} · margin ${m.verification.gate.margin}` : (m.verification.errors[0] || 'review required'), tone: m.verification.valid ? 'ok' : 'bad' as string }] : []),
+          ...trail.slice(-4).map((a) => ({ label: `AUTHORIZATION ${a.action}`, detail: `${a.actor} · ${a.timestamp}${a.reason ? ` · ${a.reason.slice(0, 80)}` : ''}`, tone: 'ok' as string })),
+          ...ups.slice(-2).map((u) => ({ label: 'VERIFIED ACTUAL', detail: `${u.activity_code} · ${u.update_type} · ${u.status}${u.forced ? ' (forced override)' : ''}`, tone: 'ok' as string })),
+        ]);
+      } catch { setHistory([]); }
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { setBusy(false); }
   }
@@ -51,8 +69,9 @@ export default function Linker() {
 
   return (
     <div>
-      <h2>Schedule Linker</h2>
-      <PipelineStrip active="LINKED" />
+      <h2>L5/L6 Reconciliation</h2>
+      <p className="mut">What decision: which schedule activity, if any, does this field evidence belong to — and can the link be trusted?</p>
+      <PipelineStrip active="RECONCILIATION" />
       {sourceMix && <p className="mut">Evidence provenance — {sourceMix} (synthetic regression fixtures retained; user uploads arrive as USER_PROVIDED).</p>}
       <div className="btnrow" role="group" aria-label="Demo scenarios">
         {DEMOS.map(([c, label, hint]) => (
@@ -83,7 +102,7 @@ export default function Linker() {
       {run && !busy && (
         <>
           <section className="card">
-            <h3>Field event <Badge tone="mut">{run.event.extractor}</Badge></h3>
+            <h3>Field evidence → execution event <Badge tone="mut">{run.event.extractor}</Badge></h3>
             <blockquote>{run.event.evidence_text}</blockquote>
             <div className="kv">
               <span>type</span><b>{run.event.event_type}</b>
@@ -94,8 +113,8 @@ export default function Linker() {
             </div>
           </section>
           <section className="card">
-            <h3>Candidates <span className="mut">margin {margin}</span></h3>
-            {run.candidates.length === 0 && <Empty text="No candidates passed retrieval filters." />}
+            <h3>Candidate activities <span className="mut">margin {margin}</span></h3>
+            {run.candidates.length === 0 && <Empty text="No compatible schedule activity was found. Review the evidence or mark it as new/unplanned work." />}
             {run.candidates.map((c) => (
               <div key={c.activity_code} className="cand">
                 <div className="row">
@@ -108,12 +127,12 @@ export default function Linker() {
             {run.unmatched && <p className="warnline">{run.reason}</p>}
           </section>
           <section className="card">
-            <h3>Execution Context / Dependency Chain</h3>
-            {!graph && <Empty text="Chain loads with the top candidate." />}
+            <h3>Execution context / dependency chain</h3>
+            {!graph && <Empty text="No dependency context yet — the chain loads with the top candidate, or the activity has no FS neighbors." />}
             {graph && <ChainStrip graph={graph} />}
           </section>
           <section className="card">
-            <h3>Granularity · Verification · Gate</h3>
+            <h3>Granularity · verification · confidence gate</h3>
             {run.verification && (
               <DecisionBanner gate={run.verification.gate} granularityType={run.granularity.type} />
             )}
@@ -127,6 +146,11 @@ export default function Linker() {
                 {run.verification.variance.details.map((d, i) => <p key={i} className="mut">{d}</p>)}
               </>
             )}
+          </section>
+          <section className="card">
+            <h3>Execution history (read-only trail)</h3>
+            <p className="mut">Evidence → event → candidates → verification → authorization, assembled from stored rows. Not a timeline engine — a trace of what the system already recorded.</p>
+            <ExecutionHistoryStrip items={history} />
           </section>
         </>
       )}

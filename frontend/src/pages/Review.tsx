@@ -69,8 +69,9 @@ export default function Review() {
 
   return (
     <div>
-      <h2>Review Queue</h2>
-      <PipelineStrip active="REVIEW/UPDATED" />
+      <h2>Planner Decision (Human Authorization)</h2>
+      <p className="mut">What decision: authorize this evidence as a verified actual — approve, reject, remap, mark new, or merge?</p>
+      <PipelineStrip active="AUTHORIZATION" />
       <div className="formrow">
         <label>Bucket
           <select value={bucket} onChange={(e) => setParams(e.target.value ? { bucket: e.target.value } : {})}>
@@ -83,7 +84,7 @@ export default function Review() {
       <div className="cols">
         <section className="card">
           <h3>Items ({items.length})</h3>
-          {items.length === 0 && <Empty text="Queue is empty for this bucket." />}
+          {items.length === 0 && <Empty text="Queue is empty for this bucket. No items need a planner decision — try another bucket or run Reconciliation first." />}
           {items.map((i) => (
             <button type="button" key={i.report_code}
               className={`qitem ${sel === i.report_code ? 'sel' : ''}`}
@@ -95,8 +96,8 @@ export default function Review() {
           ))}
         </section>
         <section className="card">
-          <h3>Decision {sel ? <code>{sel}</code> : ''}</h3>
-          {!sel && <Empty text="Select a queue item." />}
+          <h3>Planner decision {sel ? <code>{sel}</code> : ''}</h3>
+          {!sel && <Empty text="Select a queue item. Ambiguous matches and verification conflicts wait here instead of auto-updating the schedule." />}
           {selItem && (
             <div className="kv">
               <span>top</span><b>{selItem.top_activity} · {selItem.top_score}% (margin {selItem.margin})</b>

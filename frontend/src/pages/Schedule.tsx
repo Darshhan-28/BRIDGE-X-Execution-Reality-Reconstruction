@@ -43,8 +43,9 @@ export default function Schedule() {
 
   return (
     <div>
-      <h2>Schedule Intelligence</h2>
-      <PipelineStrip active="REVIEW/UPDATED" />
+      <h2>Schedule & Verified Actuals</h2>
+      <p className="mut">What decision: what was planned vs what is now authorized as actual? Records only — approvals never overwrite the plan silently.</p>
+      <PipelineStrip active="AUTHORIZATION" />
       <div className="banner">Synthetic demonstration data — not real Oil India data. Simplified view, not a Primavera replacement.</div>
       <div className="formrow">
         <label>Discipline
@@ -66,7 +67,7 @@ export default function Schedule() {
         </button>
       </div>
       <p className="mut">P6 XML is a minimal prototype — validate before production import.</p>
-      {acts.length === 0 && <Empty text="No activities for this filter." />}
+      {acts.length === 0 && <Empty text="No activities for this filter. Reseed the demo data if the schedule is unexpectedly empty." />}
       <div className="gantt">
         <div className="grow ghead"><span>Activity</span><span>Planned</span><span>Actual</span></div>
         {acts.map((a) => {

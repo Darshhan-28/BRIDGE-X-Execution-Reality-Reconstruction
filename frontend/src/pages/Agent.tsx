@@ -36,8 +36,9 @@ export default function Agent() {
 
   return (
     <div>
-      <h2>Time Agent</h2>
-      <PipelineStrip active="UNDERSTOOD" />
+      <h2>Evidence Q&A</h2>
+      <p className="mut">What decision: what does the stored evidence actually support? Database-grounded answers with citations — never writes, never guesses.</p>
+      <PipelineStrip active="EXECUTION EVENT" />
       <p className="mut">Database-grounded answers with evidence citations. The agent reads the database only — it never writes.</p>
       <div className="btnrow">
         {EXAMPLES.map((e) => (
